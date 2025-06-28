@@ -1,3 +1,6 @@
+type SortOrder = "newest" | "oldest";
+type StatusFilter = "all" | "applied" | "interview" | "offer" | "rejected";
+
 export type Job = {
   id: string;
   company: string;
@@ -21,4 +24,13 @@ export interface JobFormData {
   company: string;
   position: string;
   status: "applied" | "interview" | "offer" | "rejected";
+}
+
+export interface UIState {
+  search: string;
+  status: StatusFilter;
+  sort: SortOrder;
+  setSearch: (val: string) => void;
+  setStatus: (val: StatusFilter) => void;
+  setSort: (val: SortOrder) => void;
 }

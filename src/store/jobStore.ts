@@ -1,39 +1,22 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
-import { Job, JobStore } from "@/types/job";
+import { JobStore, UIState } from "@/types/job";
 
-// export type Job = {
-//   id: string;
-//   company: string;
-//   position: string;
-//   status: string;
-//   link?: string;
-//   notes?: string;
-//   createdAt?: string;
-// };
-
-// interface JobStore {
-//   jobs: Job[];
-//   loading: boolean;
-//   fetchJobs: () => Promise<void>;
-//   addJob: (job: Omit<Job, "id" | "createdAt">) => Promise<void>;
-// }
-
-export const useJobStore = create<JobStore>((set) => ({
+export const useJobStore = create<JobStore & UIState>((set, get) => ({
   jobs: [],
   loading: false,
+  search: "",
+  status: "all",
+  sort: "newest",
+
+  setSearch: (val) => set({ search: val }),
+  setStatus: (val) => set({ status: val }),
+  setSort: (val) => set({ sort: val }),
 
   fetchJobs: async () => {
     set({ loading: true });
     try {
       const res = await fetch("/api/jobs");
-
-      if (!res.ok) {
-        console.error("Failed to fetch jobs:", res.status);
-        set({ loading: false });
-        return;
-      }
-
       const jobs = await res.json();
       set({ jobs, loading: false });
     } catch (err) {
@@ -59,24 +42,18 @@ export const useJobStore = create<JobStore>((set) => ({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-
-    if (!res.ok) return console.error("Update failed");
-
-    const updatedJob = await res.json();
+    const updated = await res.json();
     set((state) => ({
-      jobs: state.jobs.map((job) => (job.id === id ? updatedJob : job)),
+      jobs: state.jobs.map((job) => (job.id === id ? updated : job)),
     }));
     toast.success("Job updated!");
   },
 
-  deleteJob: async (id: any) => {
-    const res = await fetch(`/api/jobs/${id}`, { method: "DELETE" });
-
-    if (!res.ok) return console.error("Delete failed");
-
+  deleteJob: async (id) => {
+    await fetch(`/api/jobs/${id}`, { method: "DELETE" });
     set((state) => ({
       jobs: state.jobs.filter((job) => job.id !== id),
     }));
-    toast.success("Job deleted.");
+    toast.success("Job deleted!");
   },
 }));
