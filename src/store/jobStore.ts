@@ -1,20 +1,52 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
-interface Job {
-  id: string
-  company: string
-  status: 'applied' | 'interview' | 'offer' | 'rejected'
+export type Job = {
+  id: string;
+  company: string;
+  position: string;
+  status: string;
+  link?: string;
+  notes?: string;
+  createdAt?: string;
+};
+
+interface JobStore {
+  jobs: Job[];
+  loading: boolean;
+  fetchJobs: () => Promise<void>;
+  addJob: (job: Omit<Job, "id" | "createdAt">) => Promise<void>;
 }
 
-interface JobState {
-  jobs: Job[]
-  addJob: (job: Job) => void
-}
-
-export const useJobStore = create<JobState>((set: any) => ({
+export const useJobStore = create<JobStore>((set) => ({
   jobs: [],
-  addJob: (job: Job) =>
-    set((state: JobState) => ({
-      jobs: [...state.jobs, job],
-    })),
-}))
+  loading: false,
+
+  fetchJobs: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch("/api/jobs");
+
+      if (!res.ok) {
+        console.error("Failed to fetch jobs:", res.status);
+        set({ loading: false });
+        return;
+      }
+
+      const jobs = await res.json();
+      set({ jobs, loading: false });
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      set({ loading: false });
+    }
+  },
+
+  addJob: async (job) => {
+    const res = await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(job),
+    });
+    const newJob = await res.json();
+    set((state) => ({ jobs: [newJob, ...state.jobs] }));
+  },
+}));

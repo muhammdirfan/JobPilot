@@ -7,6 +7,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const body = await req.json()
   const job = await prisma.job.create({
     data: {
@@ -18,4 +19,7 @@ export async function POST(req: NextRequest) {
     },
   })
   return NextResponse.json(job)
+} catch (error) {
+  return NextResponse.json({ error: 'Server error' }, { status: 500 })
+}
 }
