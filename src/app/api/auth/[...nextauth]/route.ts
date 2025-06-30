@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import { SessionStrategy } from "next-auth";
 
 export const authOptions = {
   providers: [
@@ -17,7 +18,7 @@ export const authOptions = {
     signIn: "/login",
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
   },
   callbacks: {
     async session({ session, token }: any) {

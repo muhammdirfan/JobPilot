@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useJobStore } from "@/store/jobStore";
 import { JobFormData } from "@/types/job";
+import toast from "react-hot-toast";
+import { parseAIResponse } from "@/utils";
 
 export default function AddJobForm() {
   const [isLoading, setisLoading] = useState(false);
@@ -10,6 +12,7 @@ export default function AddJobForm() {
     company: "",
     position: "",
     status: "applied" as const,
+    url: "",
   });
 
   const { addJob } = useJobStore();
@@ -19,12 +22,50 @@ export default function AddJobForm() {
     setisLoading(true);
     if (!form.company || !form.position) return;
     await addJob(form);
-    setForm({ company: "", position: "", status: "applied" });
+    setForm({ company: "", position: "", status: "applied", url: "" });
     setisLoading(false);
+  };
+
+  const handleAutoFill = async (url: any) => {
+    const res = await fetch("/api/ai/fill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      return toast.error("Auto-fill failed. Try again.");
+    }
+
+    const data = await res.json();
+    const parsed = parseAIResponse(data.raw);
+
+    setForm({
+      company: parsed.company,
+      position: parsed.position,
+      status: parsed.status,
+      url: parsed.link,
+    });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+      <input
+        type="url"
+        className="border px-4 py-2 w-full"
+        placeholder="Paste job post URL"
+        value={form.url}
+        onChange={(e) => setForm({ ...form, url: e.target.value })}
+      />
+      <button
+        type="button"
+        onClick={() => handleAutoFill(form.url)}
+        className="bg-blue-600 text-white px-2 py-1 rounded text-sm"
+      >
+        Auto-Fill
+      </button>
+
       <input
         className="border px-4 py-2 w-full"
         placeholder="Company"
