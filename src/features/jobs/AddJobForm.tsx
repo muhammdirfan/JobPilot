@@ -5,20 +5,22 @@ import { useJobStore } from "@/store/jobStore";
 import { JobFormData } from "@/types/job";
 
 export default function AddJobForm() {
+  const [isLoading, setisLoading] = useState(false);
   const [form, setForm] = useState<JobFormData>({
     company: "",
     position: "",
     status: "applied" as const,
   });
 
-  //   const [form, setForm] = useState({ company: '', position: '', status: 'applied' })
   const { addJob } = useJobStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setisLoading(true);
     if (!form.company || !form.position) return;
     await addJob(form);
     setForm({ company: "", position: "", status: "applied" });
+    setisLoading(false);
   };
 
   return (
@@ -57,8 +59,9 @@ export default function AddJobForm() {
       <button
         type="submit"
         className="bg-blue-600 text-white px-4 py-2 rounded"
+        disabled={isLoading}
       >
-        Add Job
+        {isLoading ? "Loading..." : "Add Job"}
       </button>
     </form>
   );

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useJobStore } from "@/store/jobStore";
 import JobCard from "./components/JobCard";
+import KanbanBoard from "../kanban/KanbanBoard";
 
 export default function JobList() {
   const {
@@ -37,7 +38,7 @@ export default function JobList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 mb-4">
+      <div className="flex justify-center gap-2 mb-4">
         <input
           placeholder="Search..."
           value={search}
@@ -69,9 +70,7 @@ export default function JobList() {
       {!loading && filtered.length === 0 && <p>No jobs found.</p>}
 
       <div className="grid gap-4">
-        {filtered.map((job) => (
-          <JobCard key={job.id} job={job} />
-        ))}
+        <KanbanBoard jobs={filtered} />
       </div>
     </div>
   );
