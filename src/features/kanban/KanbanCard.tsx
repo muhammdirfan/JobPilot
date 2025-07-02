@@ -14,6 +14,7 @@ export default function KanbanCard({ job }: { job: Job }) {
 
   const { updateJob, deleteJob } = useJobStore();
   const [editing, setEditing] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [form, setForm] = useState({
     company: job.company,
     position: job.position,
@@ -32,6 +33,16 @@ export default function KanbanCard({ job }: { job: Job }) {
     await updateJob(job.id, form);
     setEditing(false);
   };
+
+  const getPlatform = (url?: string) => {
+    if (!url) return "Unknown";
+    if (url.includes("upwork.com")) return "Upwork";
+    if (url.includes("linkedin.com")) return "LinkedIn";
+    if (url.includes("indeed.com")) return "Indeed";
+    return "Other";
+  };
+
+  const platform = getPlatform(job.link);
 
   if (editing) {
     return (
@@ -95,16 +106,44 @@ export default function KanbanCard({ job }: { job: Job }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white p-3 border rounded shadow relative ${
+      className={`bg-white p-3 border rounded shadow relative space-y-1 ${
         isDragging ? "ring-2 ring-blue-500 scale-105" : ""
       }`}
     >
-      <div {...listeners} {...attributes} className="cursor-move mt-2">
+      <div {...listeners} {...attributes} className="cursor-move mt-4">
         <p className="font-semibold">{job.position}</p>
         <p className="text-sm text-gray-500">{job.company}</p>
+        <p className="text-xs text-gray-400">📌 {platform}</p>
       </div>
 
-      <div className="absolute top-2 right-2 flex gap-2 z-10 ">
+      {job.notes && (
+        <div className="text-xs text-gray-600">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="text-blue-600 hover:underline text-xs"
+          >
+            {showDetails ? "▲ Hide Description" : "▼ Show Description"}
+          </button>
+          {showDetails && (
+            <p className="mt-1 whitespace-pre-line text-xs bg-gray-50 p-2 rounded">
+              {job.notes}
+            </p>
+          )}
+        </div>
+      )}
+
+      {job.link && (
+        <a
+          href={job.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-blue-600 underline mt-1 inline-block"
+        >
+          🔗 View Job Post
+        </a>
+      )}
+
+      <div className="absolute top-2 right-2 flex gap-2 z-10">
         <button
           onClick={() => setEditing(true)}
           className="text-xs text-blue-500 hover:underline cursor-pointer"

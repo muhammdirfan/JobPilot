@@ -25,6 +25,8 @@ export interface JobFormData {
   position: string;
   status: "applied" | "interview" | "offer" | "rejected";
   url: string;
+  notes: string;
+  platform: string;
 }
 
 export interface UIState {
